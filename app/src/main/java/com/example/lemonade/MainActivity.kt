@@ -30,6 +30,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.lemonade.ui.theme.LemonadeTheme
+import kotlin.random.Random
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -49,14 +50,17 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Lemonade(modifier: Modifier = Modifier) {
-    var result by remember { mutableIntStateOf(1) }
-    val imgRes = when (result) {
+    var stage by remember { mutableIntStateOf(1) }
+    var clickCount by remember { mutableIntStateOf(0) }
+    var clickThreshold by remember { mutableIntStateOf(Random.nextInt(3, 5)) }
+
+    val imgRes = when (stage) {
         1 -> R.drawable.lemon_tree
         2 -> R.drawable.lemon_squeeze
         3 -> R.drawable.lemon_drink
         else -> R.drawable.lemon_restart
     }
-    val strRes = when (result) {
+    val strRes = when (stage) {
         1 -> R.string.lemon_tree_instructions
         2 -> R.string.lemon_squeeze_instructions
         3 -> R.string.lemon_drink_instructions
@@ -69,7 +73,19 @@ fun Lemonade(modifier: Modifier = Modifier) {
             .fillMaxSize()
     ) {
         Button(
-            onClick = { if (result < 4) result++ else result = 1 },
+            onClick = {
+                if (stage == 2) {
+                    clickCount++
+                    if (clickCount >= clickThreshold) {
+                        clickCount = 0
+                        clickThreshold = Random.nextInt(3, 5)
+                        stage++
+                    }
+                } else {
+                    stage++
+                }
+                if (stage > 4) stage = 1
+            },
             shape = RoundedCornerShape(32.dp),
             colors = ButtonDefaults.buttonColors(colorResource(R.color.swampy_lemonade_green)),
             modifier = modifier
@@ -78,7 +94,6 @@ fun Lemonade(modifier: Modifier = Modifier) {
                 painter = painterResource(imgRes),
                 contentDescription = null,
             )
-
         }
         Spacer(modifier = Modifier.height(16.dp))
         Text(
